@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto py-10">
+        <h1 class="text-3xl font-bold mb-6">Create Quiz</h1>
+        <!-- Create Quiz Form -->
+        <form id="create-quiz-form" class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+            <!-- Quiz Name Input -->
+            <div class="mb-6">
+                <label for="quiz-name" class="block text-gray-800 font-semibold mb-2">Quiz Name</label>
+                <input type="text" id="quiz-name" name="quiz-name" class="form-input w-full" placeholder="Enter quiz name">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600">Create Quiz</button>
+        </form>
+
+        <!-- Fetch and Add Questions to Created Quiz -->
+        <div id="add-questions-section" class="hidden">
+            <h2 class="text-2xl font-bold my-6">Add Questions to Created Quiz</h2>
+            <button id="add-questions-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600">Add Questions</button>
+        </div>
+
+        <!-- Add Questions Form -->
+        <div id="add-questions-form" class="hidden">
+            <h2 class="text-2xl font-bold my-6">Add Questions</h2>
+            <form id="questions-form" class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+                <!-- Question Input -->
+                <div class="mb-6">
+                    <label for="question" class="block text-gray-800 font-semibold mb-2">Question</label>
+                    <input type="text" id="question" name="question" class="form-input w-full" placeholder="Enter question">
+                </div>
+
+                <!-- Option Inputs -->
+                <div class="mb-6">
+                    <label for="options" class="block text-gray-800 font-semibold mb-2">Options</label>
+                    <input type="text" id="option1" name="options[]" class="form-input w-full" placeholder="Enter option 1">
+                    <input type="text" id="option2" name="options[]" class="form-input w-full mt-2" placeholder="Enter option 2">
+                    <!-- Add more options as needed -->
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600">Add Question</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('create-quiz-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const quizName = formData.get('quiz-name');
+            let quizID;
+
+            // Assuming you have an endpoint to create a quiz
+            fetch('http://localhost:4000/quiz/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                       
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        name: quizName
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Created Quiz:', data);
+                    quizID = data._id;
+                    document.getElementById('add-questions-section').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error creating quiz:', error);
+                });
+        });
+
+        document.getElementById('add-questions-btn').addEventListener('click', function() {
+            document.getElementById('add-questions-btn').classList.add('hidden');
+            document.getElementById('add-questions-form').classList.remove('hidden');
+        });
+
+        document.getElementById('questions-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const question = formData.get('question');
+            const options = Array.from(formData.getAll('options[]'));
+
+            // Assuming you have an endpoint to add questions to the created quiz
+            fetch(`http://localhost:4000/question/create/${quizID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        options: options
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Added Question:', data);
+                    // Reset form after successful submission
+                    this.reset();
+                })
+                .catch(error => {
+                    console.error('Error adding question:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>

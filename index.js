@@ -5,6 +5,7 @@ const userRoutes=require('./routes/user.routes')
 const quizRoutes=require('./routes/quiz.routes')
 const questionRoutes=require('./routes/question.routes')
 const takeQuizRoutes=require('./routes/takeQuiz.routes')
+const cors=require('cors')
 
 const url=process.env.mongo_url
 
@@ -15,6 +16,7 @@ mongoose.connect(url).then(()=>{
 })
 
 app.use(express.json())
+app.use(cors())
 
 app.use('/user',userRoutes)
 app.use('/quiz',quizRoutes)

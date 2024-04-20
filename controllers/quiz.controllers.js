@@ -20,12 +20,16 @@ const createQuiz=async(req,res)=>{
 
 const getQuiz=async(req,res)=>{
     try{
-        const quiz=await QuizModel.find()
+        const quiz=await QuizModel.find().populate('questions')
+        if(!quiz){
+            return res.status(404).send('Quiz not found')
+        }
         res.status(200).send(quiz)
     }
     catch(error){
         res.status(500).json({error:error})
     }}
+
 
 
 const startQuiz=async(req,res)=>{
